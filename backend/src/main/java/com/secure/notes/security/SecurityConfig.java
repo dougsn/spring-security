@@ -21,6 +21,8 @@ public class SecurityConfig {
                 request
                         .requestMatchers("/contact").permitAll()
                         .requestMatchers("/public/**").permitAll()
+                        // O .denyAll() nega todas as requições para o endpoint especificado.
+                        .requestMatchers("/admin/**").denyAll()
                         .anyRequest().authenticated());
         //http.formLogin(Customizer.withDefaults());
         http.sessionManagement(session ->
