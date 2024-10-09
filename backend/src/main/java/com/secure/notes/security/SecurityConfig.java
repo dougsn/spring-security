@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -19,14 +20,15 @@ public class SecurityConfig {
         // Faz com que todas as requisições necessitam de autenticação
         http.authorizeHttpRequests((request) ->
                 request
-                        .requestMatchers("/contact").permitAll()
-                        .requestMatchers("/public/**").permitAll()
+                        // Permitindo requisições sem estar autenticado.
+//                        .requestMatchers("/contact").permitAll()
+//                        .requestMatchers("/public/**").permitAll()
                         // O .denyAll() nega todas as requições para o endpoint especificado.
-                        .requestMatchers("/admin/**").denyAll()
+//                        .requestMatchers("/admin/**").denyAll()
                         .anyRequest().authenticated());
         //http.formLogin(Customizer.withDefaults());
-        http.sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        // Desativando o token csrf para as requisições.
+        http.csrf(AbstractHttpConfigurer::disable);
         // Diz que a autenticação utilizada é a básica do Spring Security
         http.httpBasic(Customizer.withDefaults());
         return http.build();
