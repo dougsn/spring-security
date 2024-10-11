@@ -34,6 +34,7 @@ public class SecurityConfig {
 //                        .requestMatchers("/public/**").permitAll()
                         // O .denyAll() nega todas as requições para o endpoint especificado.
 //                        .requestMatchers("/admin/**").denyAll()
+//                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
         //http.formLogin(Customizer.withDefaults());
         // Desativando o token csrf para as requisições.
