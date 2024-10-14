@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.time.LocalDate;
 
@@ -41,6 +42,9 @@ public class SecurityConfig {
         //http.formLogin(Customizer.withDefaults());
         // Desativando o token csrf para as requisições.
         http.csrf(AbstractHttpConfigurer::disable);
+        // Adicionando um filtro antes do filtro de UsernamePasswordAuthentication, filtro criado de forma personalizada.
+        http.addFilterBefore(new CustomLoggingFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(new RequestValidationFilter(), CustomLoggingFilter.class);
         // Diz que a autenticação utilizada é a básica do Spring Security
         http.httpBasic(Customizer.withDefaults());
         return http.build();
