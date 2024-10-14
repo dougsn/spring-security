@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.time.LocalDate;
 
@@ -26,33 +25,17 @@ import java.time.LocalDate;
 public class SecurityConfig {
 
     // Quando eu declaro um novo filtro de segurança, com o @Bean, ele sobrescreve o filtro padrão do Spring Security
-
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         // Faz com que todas as requisições necessitam de autenticação
         http.authorizeHttpRequests((request) ->
                 request
-                        // Permitindo requisições sem estar autenticado.
-//                        .requestMatchers("/contact").permitAll()
-//                        .requestMatchers("/public/**").permitAll()
-                        // O .denyAll() nega todas as requições para o endpoint especificado.
-//                        .requestMatchers("/admin/**").denyAll()
-//                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
         //http.formLogin(Customizer.withDefaults());
-        // Desativando o token csrf para as requisições.
         http.csrf(AbstractHttpConfigurer::disable);
-        // Adicionando um filtro antes do filtro de UsernamePasswordAuthentication, filtro criado de forma personalizada.
-        http.addFilterBefore(new CustomLoggingFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(new RequestValidationFilter(), CustomLoggingFilter.class);
-        // Diz que a autenticação utilizada é a básica do Spring Security
         http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
-
-    // Criando diversos usuários na memória do backend, para poderem ser utilizados na aplicação.
-
-    // O {noop} diz para o Spring Security que a senha não será criptografada, será "salva" como texto simples.
 
     @Bean
     public PasswordEncoder passwordEncoder() {
