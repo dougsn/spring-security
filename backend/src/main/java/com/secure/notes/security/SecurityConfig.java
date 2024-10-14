@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import java.time.LocalDate;
 
@@ -27,12 +28,19 @@ public class SecurityConfig {
     // Quando eu declaro um novo filtro de segurança, com o @Bean, ele sobrescreve o filtro padrão do Spring Security
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        // Aqui é configurado o repositório de tokens CSRF de cookie e funciona somente com HTTP.
+        http.csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                // Configurando para ignorar o Token do CSRF para o controller abaixo especificado.
+                .ignoringRequestMatchers("/api/auth/public/**")
+        );
         // Faz com que todas as requisições necessitam de autenticação
         http.authorizeHttpRequests((request) ->
                 request
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/csrf-token").permitAll()
                         .anyRequest().authenticated());
-        //http.formLogin(Customizer.withDefaults());
-        http.csrf(AbstractHttpConfigurer::disable);
+        http.formLogin(Customizer.withDefaults());
         http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
