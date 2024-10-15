@@ -42,10 +42,11 @@ public class SecurityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         // Aqui é configurado o repositório de tokens CSRF de cookie e funciona somente com HTTP.
         http.csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                // Configurando para ignorar o Token do CSRF para o controller abaixo especificado.
-                .ignoringRequestMatchers("/api/auth/public/**")
-        );
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        // Configurando para ignorar o Token do CSRF para o controller abaixo especificado.
+                        .ignoringRequestMatchers("/api/auth/public/**")
+                );
+        http.cors(Customizer.withDefaults());
         // Faz com que todas as requisições necessitam de autenticação
         http.authorizeHttpRequests((request) ->
                 request
