@@ -1,18 +1,23 @@
 package com.secure.notes.security.jwt;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
@@ -35,8 +40,12 @@ public class JwtUtils {
 
     public String generateTokenFromUsername(UserDetails userDetails) {
         String username = userDetails.getUsername();
+        // Pegando os roles do usuário.
+        String roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         return Jwts.builder()
                 .subject(username)
+                .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key())
