@@ -1,5 +1,6 @@
 package com.secure.notes.security;
 
+import com.secure.notes.config.OAuth2LoginSuccessHandler;
 import com.secure.notes.models.AppRole;
 import com.secure.notes.models.Role;
 import com.secure.notes.models.User;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -32,6 +34,11 @@ public class SecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
+    @Autowired
+    @Lazy
+    OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
@@ -42,18 +49,23 @@ public class SecurityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         // Aqui é configurado o repositório de tokens CSRF de cookie e funciona somente com HTTP.
         http.csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        // Configurando para ignorar o Token do CSRF para o controller abaixo especificado.
-                        .ignoringRequestMatchers("/api/auth/public/**")
-                );
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                // Configurando para ignorar o Token do CSRF para o controller abaixo especificado.
+                .ignoringRequestMatchers("/api/auth/public/**")
+        );
         http.cors(Customizer.withDefaults());
         // Faz com que todas as requisições necessitam de autenticação
         http.authorizeHttpRequests((request) ->
-                request
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/csrf-token").permitAll()
-                        .requestMatchers("/api/auth/public/**").permitAll()
-                        .anyRequest().authenticated());
+                        request
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/csrf-token").permitAll()
+                                .requestMatchers("/api/auth/public/**").permitAll()
+                                .requestMatchers("/oauth2/**").permitAll()
+                                .anyRequest().authenticated())
+                                // Habilitando a autenticação OAuth2 no SpringSecurity
+                                .oauth2Login(oauth2 -> {
+                                    oauth2.successHandler(oAuth2LoginSuccessHandler);
+                                });
         // Dizendo ao Spring para levar a classe "unauthorizedHandler" como mecanismo padrão de exceção de autenticação.
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler));
         // Adicionando o filtro de verificação do JWT antes da autenticação do usuário.
